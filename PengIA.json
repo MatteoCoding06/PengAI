@@ -1,0 +1,910 @@
+{
+  "name": "PengIA",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [-112, 0],
+      "id": "966a30e7-0ac8-4fa7-8c85-b7e189be1b7c",
+      "name": "Telegram Trigger",
+      "webhookId": "INSERISCI_QUI_IL_TUO_WEBHOOK",
+      "alwaysOutputData": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "jYB8B68UVIx5GULo",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.content.parts[0].text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1808, 32],
+      "id": "155f6c2b-1703-467b-8dab-57134805083c",
+      "name": "Risposta AI Successo",
+      "webhookId": "95f9bd58-cd4e-494a-addf-14207726fccf",
+      "alwaysOutputData": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "jYB8B68UVIx5GULo",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Sto analizzando la tua richiesta... ⏳",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [976, 176],
+      "id": "5dd14a62-1565-43b3-9936-bf5105fc9218",
+      "name": "Invio Messaggio D'Attesa",
+      "webhookId": "68eb7287-4f2b-446c-9f64-b9b0b7ab507c",
+      "credentials": {
+        "telegramApi": {
+          "id": "jYB8B68UVIx5GULo",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "cache_domande",
+          "mode": "list",
+          "cachedResultName": "cache_domande"
+        },
+        "prompt": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "topK": 1,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [416, -160],
+      "id": "5fa0183e-4efa-434d-b999-da1cd25e1fdb",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "q4HxsT0B2g1nSakO",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [528, 80],
+      "id": "1d72ff40-a27d-4684-8e56-549ee99b75b8",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "QONQx8xoplLKQfvp",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f8c9eaa9-35d6-4a9b-98d6-e7316af32e34",
+              "leftValue": "={{ $json.score }}",
+              "rightValue": 0.85,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [704, -144],
+      "id": "1bdfd085-614c-42dc-aa95-b14333266e03",
+      "name": "If",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $('Qdrant Vector Store').item.json.document.metadata.risposta }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1040, -144],
+      "id": "c519c7dc-8edc-496c-a561-9c7e384f65ca",
+      "name": "Send a text message",
+      "webhookId": "cb77c076-dbfd-45ff-a2a0-5355e226dcad",
+      "credentials": {
+        "telegramApi": {
+          "id": "jYB8B68UVIx5GULo",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "cache_domande",
+          "mode": "list",
+          "cachedResultName": "cache_domande"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [2048, -112],
+      "id": "4fa853fb-072a-4bce-b7fa-8932804eefff",
+      "name": "Qdrant Vector Store1",
+      "credentials": {
+        "qdrantApi": {
+          "id": "q4HxsT0B2g1nSakO",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [2064, 96],
+      "id": "9a5c631d-b7fc-4f80-9dba-87d20c3ac1fd",
+      "name": "Embeddings Ollama1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "QONQx8xoplLKQfvp",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "risposta",
+                "value": "={{ $json.result.text }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [2208, 80],
+      "id": "cee192d7-2cfc-42f3-8241-6ca49fdca854",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/nse",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notStartsWith"
+                    },
+                    "id": "21e91334-ce5c-4003-bab3-987905f277d8"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8a7a4946-c5a3-4abf-91c1-92310683a5e8",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/nse",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [32, 0],
+      "id": "711ca10a-8f3d-413f-b8f5-a606b50c86e8",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "cache_nse",
+          "mode": "list",
+          "cachedResultName": "cache_nse"
+        },
+        "prompt": "={{ $json.message.text }}",
+        "topK": 1,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [112, 496],
+      "id": "1bb77f16-6b7f-48bc-a3ee-6fe39bbfe936",
+      "name": "Qdrant Vector Store2",
+      "credentials": {
+        "qdrantApi": {
+          "id": "q4HxsT0B2g1nSakO",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [96, 736],
+      "id": "01d27356-7d8e-4587-a359-2481a83b0986",
+      "name": "Embeddings Ollama2",
+      "credentials": {
+        "ollamaApi": {
+          "id": "QONQx8xoplLKQfvp",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.content.parts[0].text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1600, 928],
+      "id": "ebdf4ba3-1f9e-448a-9633-7499db39041c",
+      "name": "Risposta AI Successo1",
+      "webhookId": "95f9bd58-cd4e-494a-addf-14207726fccf",
+      "credentials": {
+        "telegramApi": {
+          "id": "jYB8B68UVIx5GULo",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Sto analizzando la tua richiesta... ⏳",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [768, 1072],
+      "id": "36a25d66-91e1-44d1-874f-ac040a092e02",
+      "name": "Invio Messaggio D'Attesa1",
+      "webhookId": "68eb7287-4f2b-446c-9f64-b9b0b7ab507c",
+      "credentials": {
+        "telegramApi": {
+          "id": "jYB8B68UVIx5GULo",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $('Qdrant Vector Store2').item.json.document.metadata.risposta }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [928, 592],
+      "id": "d6943496-3c94-4463-a217-bfb5671524b2",
+      "name": "Send a text message1",
+      "webhookId": "cb77c076-dbfd-45ff-a2a0-5355e226dcad",
+      "credentials": {
+        "telegramApi": {
+          "id": "jYB8B68UVIx5GULo",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "=cache_nse",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [1840, 784],
+      "id": "1d476671-c86f-4d53-a522-0d4175f9e79e",
+      "name": "Qdrant Vector Store3",
+      "credentials": {
+        "qdrantApi": {
+          "id": "q4HxsT0B2g1nSakO",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [1856, 992],
+      "id": "3d5b6b44-cae5-40c5-9750-f384f7a5ce41",
+      "name": "Embeddings Ollama3",
+      "credentials": {
+        "ollamaApi": {
+          "id": "QONQx8xoplLKQfvp",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "risposta",
+                "value": "={{ $json.result.text }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [2000, 976],
+      "id": "af681f24-b149-4dd7-a165-9a126b1c7de7",
+      "name": "Default Data Loader1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prende il testo originale\nlet text = $input.item.json.message.text;\n\n// Rimuove /NSE e toglie gli spazi vuoti all'inizio/fine\n$input.item.json.message.text = text.replace('/nse', '').trim();\n\n// Passa il dato al nodo successivo\nreturn $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 208],
+      "id": "86196500-8c1c-489f-b58a-157039718855",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "COMANDO OBBLIGATORIO: Devi eseguire questo strumento per qualsiasi domanda dell'utente riguardante l'azienda NSE. Eseguilo per ottenere il testo da leggere.",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "nse_knowledge_base",
+          "mode": "list",
+          "cachedResultName": "nse_knowledge_base"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [1200, 1264],
+      "id": "d90bc429-9e41-48ae-b7ca-fa33f8a2144f",
+      "name": "Qdrant Vector Store4",
+      "credentials": {
+        "qdrantApi": {
+          "id": "q4HxsT0B2g1nSakO",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [1296, 1472],
+      "id": "c8d8f4f0-2e7c-4e38-8436-daa139498980",
+      "name": "Embeddings Ollama5",
+      "credentials": {
+        "ollamaApi": {
+          "id": "QONQx8xoplLKQfvp",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $('Telegram Trigger').item.json.message.text }}"
+            }
+          ]
+        },
+        "builtInTools": {
+          "googleSearch": false,
+          "urlContext": false
+        },
+        "options": {
+          "systemMessage": "Regola fondamentale: Rispondi ESCLUSIVAMENTE in testo semplice (plain text). NON usare ASSOLUTAMENTE la formattazione Markdown, non usare asterischi (*), hashtag (#) o underscore (_)."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [1424, 48],
+      "id": "6c181681-5c6c-4f54-adbc-fa21b2f2f39a",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WKfR0jd5EiPzCTP3",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $('Telegram Trigger').item.json.message.text }}"
+            }
+          ]
+        },
+        "builtInTools": {
+          "googleSearch": false,
+          "urlContext": false
+        },
+        "options": {
+          "systemMessage": "Regola fondamentale: Rispondi ESCLUSIVAMENTE in testo semplice (plain text). NON usare ASSOLUTAMENTE la formattazione Markdown, non usare asterischi (*), hashtag (#) o underscore (_)."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [1072, 1024],
+      "id": "9fc08093-a914-4de5-a6c8-9411f863fe8c",
+      "name": "Message a model1",
+      "retryOnFail": false,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "WKfR0jd5EiPzCTP3",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f8c9eaa9-35d6-4a9b-98d6-e7316af32e34",
+              "leftValue": "={{ $json.score || 0 }}",
+              "rightValue": 0.85,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [560, 640],
+      "id": "a76a5b3b-c64a-4488-9c78-afaccf2f623f",
+      "name": "If1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "messageId": "={{ $('Invio Messaggio D\\'Attesa').item.json.result.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [2400, -112],
+      "id": "f1d04bd9-6282-4558-9a1a-c5c992e9e6f3",
+      "name": "Delete a chat message",
+      "webhookId": "0be88cef-3f5f-459a-916f-be7ce6588718",
+      "credentials": {
+        "telegramApi": {
+          "id": "jYB8B68UVIx5GULo",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "messageId": "={{ $('Invio Messaggio D\\'Attesa1').item.json.result.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [2224, 800],
+      "id": "1af9c1a8-3fa0-4f3a-8ff9-d6a8ecc94137",
+      "name": "Delete a chat message1",
+      "webhookId": "0be88cef-3f5f-459a-916f-be7ce6588718",
+      "credentials": {
+        "telegramApi": {
+          "id": "jYB8B68UVIx5GULo",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invio Messaggio D'Attesa": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Invio Messaggio D'Attesa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Risposta AI Successo": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Risposta AI Successo1": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invio Messaggio D'Attesa1": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama3": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store3",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store3",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store2": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store4": {
+      "ai_tool": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama5": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store4",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Risposta AI Successo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Risposta AI Successo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Invio Messaggio D'Attesa1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store1": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store3": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "f2918570-a097-45ad-ae71-cfb0f1bc26e9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9865ce6c57119a2872e4cd0c7d2a1dd2669512019b4781b662341abf8052b1f7"
+  },
+  "nodeGroups": [],
+  "id": "ogxW3zOF6oqpR7aL",
+  "tags": []
+}
