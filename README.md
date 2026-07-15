@@ -41,5 +41,5 @@ Se desideri replicare l'ambiente di sviluppo in locale:
 
 1. **Clona la repository:**
    ```bash
-   git clone [https://github.com/TUO-USERNAME/PengIA.git](https://github.com/TUO-USERNAME/PengIA.git)
+   git clone [https://github.com/MatteoCoding06/PengIA.git](https://github.com/MatteoCoding06/PengIA.git)
    cd PengIA
