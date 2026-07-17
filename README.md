@@ -1,7 +1,5 @@
 # 🐧 PengIA - Telegram AI Assistant & RAG Engine
 
-<img width="1920" height="1080" alt="test2" src="https://github.com/user-attachments/assets/2c4d545d-b02c-47ab-b486-e83d2ab38277" />
-
 PengIA è un assistente virtuale avanzato integrato su Telegram, progettato per gestire sia conversazioni generaliste che interrogazioni specifiche su documenti aziendali (Knowledge Base NSE). L'intera architettura è orchestrata tramite **n8n** e sfrutta un approccio ibrido: AI cloud-based per il ragionamento elastico e AI locale per la vettorializzazione sicura dei dati.
 
 ---
